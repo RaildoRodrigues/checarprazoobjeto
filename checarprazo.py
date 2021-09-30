@@ -1,9 +1,15 @@
 import PySimpleGUI as gui
 import requests
 
+url = 'scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
+
+def request_object_prazo(codigo_objeto):
+    resultado = requests.get(url + codigo_objeto)
+    return resultado
 
 def on_checar_click(codigo_objeto):
-    add_objeto_block_layout(codigo_objeto, '23/05/2021')
+    print(request_object_prazo(codigo_objeto))
+    #add_objeto_block_layout(codigo_objeto, '23/05/2021')
     
 def add_objeto_block_layout(codigo_objeto, data_entrega):
     block = [[gui.Text(codigo_objeto), gui.Text(data_entrega)]]
