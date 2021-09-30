@@ -1,16 +1,19 @@
 import PySimpleGUI as gui
+import requests
 
-def on_checar_click(codigo):
-    print(codigo)
+
+def on_checar_click(codigo_objeto):
+    add_objeto_block_layout(codigo_objeto, '23/05/2021')
     
-def object_block_layout(codigo, data_entrega):
-    return [[gui.Text(codigo), gui.Text(data_entrega)]]
+def add_objeto_block_layout(codigo_objeto, data_entrega):
+    block = [[gui.Text(codigo_objeto), gui.Text(data_entrega)]]
+    window.extend_layout(window['lista'], block)
     
 # Window Layout    
 layout = [
     [gui.Text('Código de rastreamento')],
     [gui.Input(key='codigo', size=(13,1)), gui.Button('checar')],
-    [gui.Column([],key='lista')]
+    [gui.Column([],key='lista', size=(24,1))]
         ]
 window = gui.Window('Checar Prazo', layout, size=(300,300))
 
