@@ -1,11 +1,11 @@
 import PySimpleGUI as gui
 import requests
 
-url = 'scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
+url = 'http://scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
 
 def request_object_prazo(codigo_objeto):
     resultado = requests.get(url + codigo_objeto)
-    return resultado
+    return resultado.text
 
 def on_checar_click(codigo_objeto):
     print(request_object_prazo(codigo_objeto))
@@ -30,3 +30,4 @@ while True:
     elif event == 'checar':
         on_checar_click(values['codigo'])
 window.Close()
+
