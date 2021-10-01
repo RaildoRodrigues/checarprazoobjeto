@@ -2,12 +2,12 @@ import PySimpleGUI as gui
 from PySimpleGUI.PySimpleGUI import Text, rgb
 import requests
 import xmltodict
-from datetime import date, datetime
+from datetime import datetime
 
 urlinterna = 'http://scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
 urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataMaxima?codigoObjeto='
 
-url = urlexterna
+url = urlinterna
 
 gui.theme('Reddit')
 
@@ -34,7 +34,7 @@ class ObjetoPostal:
 
 
     def get_status(self, data):
-        if(data > date.today()):
+        if(data > datetime.now()):
             self.color = 'green'
             return 'No Prazo'
         elif(data < date.today()):
@@ -46,7 +46,7 @@ class ObjetoPostal:
 
     def get_vencimento_from_string(self, string_data):
         if (string_data != None):
-            return datetime.strftime(string_data, '%d/%m/%y %H:%M:%S')
+            return datetime.strptime(string_data, '%d/%m/%Y %H:%M')
         else:
             return date.today()
 
@@ -76,7 +76,3 @@ while True:
     elif event == 'checar':
         on_checar_click(values['codigo'])
 window.Close()
-
-
-
-
