@@ -1,5 +1,4 @@
 import PySimpleGUI as gui
-from PySimpleGUI.PySimpleGUI import Text, rgb
 import requests
 import xmltodict
 from datetime import datetime
@@ -63,13 +62,20 @@ class ObjetoPostal:
     
 
     
-# Window Layout    
-layout = [
-    [gui.Text('Código de rastreamento')],
+#Layouts
+frame_layout = [
+    [gui.Text('AA123456789BR')],
+    [gui.Text('99/99/9999'), gui.Text('Status')]
+    ]
+
+window_layout = [
+    [gui.Text('Consulta Prazo')],
     [gui.Input(key='codigo', size=(13,1)), gui.Button('checar')],
-    [gui.Column([],key='lista', size=(24,1))]
+    [gui.Frame('Objeto', frame_layout)],
+    
         ]
-window = gui.Window('Checar Prazo', layout, size=(300,300))
+
+window = gui.Window('Checar Prazo', window_layout, size=(300,300))
 
 # Loop Window
 while True:   
