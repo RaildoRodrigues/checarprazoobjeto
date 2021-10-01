@@ -26,6 +26,7 @@ class ObjetoPostal:
         self.vencimento = self.get_vencimento_from_string(dados_postais['dataMaxEntrega'])
         self.status = self.get_status(self.vencimento)
         self.color = None
+        
     
     def print_object(self):
         print('Código: ' , self.codigo)
@@ -34,13 +35,14 @@ class ObjetoPostal:
 
 
     def get_status(self, data):
-        if(data > datetime.now()):
+        self.dias_diferenca = (datetime.today() - data).days
+        if(self.dias_diferenca < 0):
             self.color = 'green'
             return 'No Prazo'
-        elif(data < date.today()):
+        elif(self.dias_diferenca > 0):
             self.color = 'red'
             return 'Vencido'
-        elif(data == date.today()):
+        else:
             self.color = 'blue'
             return 'Hoje'
 
@@ -48,7 +50,7 @@ class ObjetoPostal:
         if (string_data != None):
             return datetime.strptime(string_data, '%d/%m/%Y %H:%M')
         else:
-            return date.today()
+            return datetime.today()
 
     def request_dict_dados_postais(self, codigo_postal):
         get_xml = requests.get(url + codigo_postal)
@@ -57,7 +59,7 @@ class ObjetoPostal:
     
     def layout(self):
         layout_data = self.vencimento.strftime("%d/%m/%Y")
-        return [[gui.Text(self.codigo, text_color=self.color), gui.Text(layout_data, background_color=self.color)]]
+        return [[gui.Text(self.codigo), gui.Text(self.dias_diferenca)]]
     
 
     
