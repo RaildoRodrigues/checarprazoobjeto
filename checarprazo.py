@@ -13,7 +13,8 @@ gui.theme('Reddit')
 
 def on_checar_click(codigo_objeto):
     novo_objeto = ObjetoPostal(codigo_objeto)
-    window.extend_layout(window['lista'], novo_objeto.layout())
+    novo_objeto.print_object()
+    #window.extend_layout(window['lista'], novo_objeto.layout())
 
 class ObjetoPostal:
 
@@ -30,7 +31,7 @@ class ObjetoPostal:
     def print_object(self):
         print('Código: ' , self.codigo)
         print('Status: ', self.status)
-        print('Vencimento: ' , self.vencimento)
+        print('Vencimento: ' , self.vencimento.strftime("%d/%m/%Y"))
 
 
     def get_status(self, data):
@@ -58,7 +59,7 @@ class ObjetoPostal:
     
     def layout(self):
         layout_data = self.vencimento.strftime("%d/%m/%Y")
-        return [[gui.Text(self.codigo), gui.Text(self.dias_diferenca)]]
+        return [[gui.Text(self.codigo), gui.Text(layout_data)]]
     
 
     
@@ -70,12 +71,13 @@ frame_layout = [
 
 window_layout = [
     [gui.Text('Consulta Prazo')],
-    [gui.Input(key='codigo', size=(13,1)), gui.Button('checar')],
+    [gui.Input(key='codigo', size=(13,1)), gui.Button('checar',bind_return_key=True )],
     [gui.Frame('Objeto', frame_layout)],
+    [gui.Table([['AA123456799BR', '99/99/9999', 'VENCIDO']], headings=['OBJETO', 'VENCIMENTO', 'SITUAÇÃO'])]
     
         ]
 
-window = gui.Window('Checar Prazo', window_layout, size=(300,300))
+window = gui.Window('Checar Prazo', window_layout, size=(400,300))
 
 # Loop Window
 while True:   
@@ -84,3 +86,4 @@ while True:
     elif event == 'checar':
         on_checar_click(values['codigo'])
 window.Close()
+
