@@ -6,15 +6,10 @@ from datetime import datetime
 urlinterna = 'http://scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
 urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataMaxima?codigoObjeto='
 
-url = urlinterna
+url = urlexterna
+lista_objetos = []
 
 gui.theme('Reddit')
-
-
-def on_checar_click(codigo_objeto):
-    novo_objeto = ObjetoPostal(codigo_objeto)
-    novo_objeto.print_object()
-    #window.extend_layout(window['lista'], novo_objeto.layout())
 
 class ObjetoPostal:
 
@@ -24,6 +19,7 @@ class ObjetoPostal:
         self.ultimo_evento = dados_postais['descricaoUltimoEvento']
         self.erro = dados_postais['msgErro']
         self.vencimento = self.get_vencimento_from_string(dados_postais['dataMaxEntrega'])
+        self.vencimento_formatado = self.vencimento.strftime("%d/%m/%Y")
         self.status = self.get_status(self.vencimento)
         self.color = None
         
@@ -44,7 +40,7 @@ class ObjetoPostal:
             return 'Vencido'
         else:
             self.color = 'blue'
-            return 'Hoje'
+            return 'Entregar Hoje'
 
     def get_vencimento_from_string(self, string_data):
         if (string_data != None):
@@ -58,26 +54,45 @@ class ObjetoPostal:
         return dict_objeto_postal['cResultadoObjeto']['Objetos']['cObjeto']
     
     def layout(self):
-        layout_data = self.vencimento.strftime("%d/%m/%Y")
-        return [[gui.Text(self.codigo), gui.Text(layout_data)]]
-    
-
-    
+        return [self.codigo, self.vencimento_formatado, self.status]
+  
 #Layouts
 frame_layout = [
-    [gui.Text('AA123456789BR')],
-    [gui.Text('99/99/9999'), gui.Text('Status')]
+    [gui.Text('AA123456789BR', key='-frame_codigo-', font='Helvetica 24', size=(26,1))],
+    [gui.Text('99/99/9999', key='-frame_data-'), gui.Text('Status', key='-frame_status-')]
     ]
 
 window_layout = [
     [gui.Text('Consulta Prazo')],
-    [gui.Input(key='codigo', size=(13,1)), gui.Button('checar',bind_return_key=True )],
-    [gui.Frame('Objeto', frame_layout)],
-    [gui.Table([['AA123456799BR', '99/99/9999', 'VENCIDO']], headings=['OBJETO', 'VENCIMENTO', 'SITUAÇÃO'])]
+    [gui.Input(key='codigo', size=(26,1), focus=True), gui.Button('checar',bind_return_key=True )],
+    [gui.Frame('Objeto', frame_layout, element_justification='c', key=('-frame-'))],
+    [gui.Table([['','','']], headings=['OBJETO', 'VENCIMENTO', 'SITUAÇÃO'], key='-table-')]
     
         ]
 
 window = gui.Window('Checar Prazo', window_layout, size=(400,300))
+
+
+def on_checar_click(codigo_objeto):
+    novo_objeto = ObjetoPostal(codigo_objeto)
+    update_frame(novo_objeto)
+    clear_input()
+    lista_objetos.insert(0, novo_objeto.layout())
+    update_table()
+
+def update_table():
+    window['-table-'].update(values=lista_objetos)
+
+def clear_input():
+    window['codigo'].update('')
+    window['codigo'].focus = True
+
+def update_frame(novo_objeto):
+    window['-frame_codigo-'].update(novo_objeto.codigo)
+    window['-frame_data-'].update(novo_objeto.vencimento_formatado)
+    window['-frame_status-'].update(novo_objeto.status)
+
+
 
 # Loop Window
 while True:   
@@ -86,4 +101,7 @@ while True:
     elif event == 'checar':
         on_checar_click(values['codigo'])
 window.Close()
+
+
+
 
