@@ -10,8 +10,6 @@ url = urlexterna
 lista_objetos = []
 lista_colors = []
 
-gui.theme('Reddit')
-
 class ObjetoPostal:
 
     def __init__(self, codigo_postal):
@@ -21,11 +19,18 @@ class ObjetoPostal:
         self.erro = dados_postais['msgErro']
         self.vencimento = self.get_vencimento_from_string(dados_postais['dataMaxEntrega'])
         self.vencimento_formatado = self.vencimento.strftime("%d/%m/%Y")
+        self.tipo = self.validate_servico(dados_postais['servico'])
         self.color = None
         self.bg_color = None
         self.status = self.get_status(self.vencimento)
         self.check_erro()
 
+
+    def validate_servico(self, servico_string):
+        if servico_string == None:
+            return ''
+        else:
+            return dicionario_de_tipos[servico_string]
 
     def validate_codigo(self, code_string):
         if code_string == None:
@@ -37,6 +42,8 @@ class ObjetoPostal:
         if self.erro != None:
             self.codigo = 'ERRO'
             self.vencimento_formatado = ''
+            self.tipo = ''
+            self.ultimo_evento = ''
             self.color = 'black'
             self.bg_color = 'salmon'
             self.status = self.erro
@@ -69,20 +76,31 @@ class ObjetoPostal:
             return datetime.today()
 
     def request_dict_dados_postais(self, codigo_postal):
-        get_xml = requests.get(url + codigo_postal)
-        dict_objeto_postal = xmltodict.parse(get_xml.text)
-        return dict_objeto_postal['cResultadoObjeto']['Objetos']['cObjeto']
+        try:
+            get_xml = requests.get(url + codigo_postal)
+            dict_objeto_postal = xmltodict.parse(get_xml.text)
+            return dict_objeto_postal['cResultadoObjeto']['Objetos']['cObjeto']
+        except:
+            gui.popup('erro de conexão')
     
     def layout(self):
         return [self.codigo, self.vencimento_formatado, self.status]
   
 #Layouts
+gui.theme('Reddit')
+
+menu_layout = [['Ajuda', ['Instruções::help', 'Sobre::sobre']]]
+
 frame_layout = [
-    [gui.Text('', key='-frame_codigo-', font='Helvetica 24', size=(26,2),expand_y=True ,expand_x=True,justification='center')],
-    [gui.Text('', key='-frame_data-', size=(10,2)), gui.Text('', key='-frame_status-', size=(24,3))]
+    [gui.Text('', key='-frame_codigo-', font='Helvetica 30 bold', size=(26,2),expand_y=True ,expand_x=True,justification='center', pad=0)],
+    [gui.Text('', key='-frame_data-', font='Helvetica 24', size=(26,2),expand_y=True ,expand_x=True,justification='center',pad=0)],
+    [gui.Text('', key='-frame_tipo-', size=(36,1))],
+    [gui.Text('', key='-frame_status-', size=(36,2))],
+    [gui.Text('', key='-frame_evento-', size=(36,1))]
     ]
 
 window_layout = [
+    [gui.Menu(menu_layout)],
     [gui.Text('Consulta Prazo')],
     [gui.Input(key='codigo', size=(26,1), focus=True), gui.Button('checar',bind_return_key=True )],
     [gui.Frame('Objeto', frame_layout, element_justification='c', key=('-frame-'))],
@@ -91,6 +109,7 @@ window_layout = [
         ]
 
 window = gui.Window('Checar Prazo', window_layout, size=(420,480), icon='verificaprazo.ico')
+
 
 
 def on_checar_click(codigo_objeto):
@@ -106,8 +125,11 @@ def carregando():
     window['-frame_codigo-'].update('carregando...')
     window['-frame_codigo-'].update(text_color='black')
     window['-frame_codigo-'].update(background_color='white')
+    window['-frame_data-'].update(background_color='white')
     window['-frame_data-'].update('')
     window['-frame_status-'].update('')
+    window['-frame_tipo-'].update('')
+    window['-frame_evento-'].update('')
     window.finalize()
 
 
@@ -123,21 +145,49 @@ def clear_input():
     window['codigo'].focus = True
 
 def update_frame(novo_objeto):
-    window['-frame_codigo-'].update(text_color=novo_objeto.color)
-    window['-frame_codigo-'].update(background_color=novo_objeto.bg_color)
+    #alterar textos
     window['-frame_codigo-'].update(novo_objeto.codigo)
-    window['-frame_data-'].update('Vencimento: ' + novo_objeto.vencimento_formatado)
-    window['-frame_status-'].update(novo_objeto.status)
+    window['-frame_data-'].update(novo_objeto.vencimento_formatado)
+    window['-frame_status-'].update('Situação: ' + novo_objeto.status)
+    window['-frame_tipo-'].update('Tipo: ' + novo_objeto.tipo)
+    window['-frame_evento-'].update('Evento: ' + novo_objeto.ultimo_evento)
+    #alterar cor da fonte
+    window['-frame_codigo-'].update(text_color=novo_objeto.color)
+    window['-frame_data-'].update(text_color=novo_objeto.color)
+    #alterar background
+    window['-frame_codigo-'].update(background_color=novo_objeto.bg_color)
+    window['-frame_data-'].update(background_color=novo_objeto.bg_color)
 
+def carregar_tipos_postais():
+    tipos_url = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/ListaServicos?'
+    xml = requests.get(tipos_url)
+    lista_de_tipos = xmltodict.parse(xml.text)['cResultadoServicos']['ServicosCalculo']['cServicosCalculo']
+    dicionario_de_tipos = {}
+    for tipo in lista_de_tipos:
+        dicionario_de_tipos[tipo['codigo']] = tipo['descricao']
+    return dicionario_de_tipos
 
+try:
+    dicionario_de_tipos = carregar_tipos_postais()
+except:
+    gui.popup('Erro de conexão')
+    window.close()
 
 
 # Loop Window
+
 while True:   
     event, values = window.read()
     if event == gui.WINDOW_CLOSED: break
     elif event == 'checar':
         on_checar_click(values['codigo'])
+    elif event == 'Instruções::help':
+        text = """Essa aplicação é auxiliar, ela não substitui nenhum sistema dos correios, é utilizada para verificar o prazo de entrega de objetos postais, todos os dados são retirados da própia API dos correios, disponível em:
+http://ws.correios.com.br/calculador/calcprecoprazo.asmx
+        """
+        gui.popup(text,icon='verificaprazo.ico', title='Instruções')
+    elif event == 'Sobre::sobre':
+        gui.popup('tecnologia utilizada: python\nerros e dúvidas: raildorcv@correios.com.br', icon='verificaprazo.ico', title='Sobre')
 window.Close()
 
 
