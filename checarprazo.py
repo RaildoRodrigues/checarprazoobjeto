@@ -8,6 +8,7 @@ urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataM
 
 url = urlexterna
 lista_objetos = []
+lista_colors = []
 
 gui.theme('Reddit')
 
@@ -15,14 +16,30 @@ class ObjetoPostal:
 
     def __init__(self, codigo_postal):
         dados_postais = self.request_dict_dados_postais(codigo_postal)
-        self.codigo = dados_postais['codigo']
+        self.codigo = self.validate_codigo(dados_postais['codigo'])
         self.ultimo_evento = dados_postais['descricaoUltimoEvento']
         self.erro = dados_postais['msgErro']
         self.vencimento = self.get_vencimento_from_string(dados_postais['dataMaxEntrega'])
         self.vencimento_formatado = self.vencimento.strftime("%d/%m/%Y")
-        self.status = self.get_status(self.vencimento)
         self.color = None
-        
+        self.bg_color = None
+        self.status = self.get_status(self.vencimento)
+        self.check_erro()
+
+
+    def validate_codigo(self, code_string):
+        if code_string == None:
+            return 'VAZIO'
+        else:
+            return code_string[:13].upper()
+
+    def check_erro(self):
+        if self.erro != None:
+            self.codigo = 'ERRO'
+            self.vencimento_formatado = ''
+            self.color = 'black'
+            self.bg_color = 'white'
+            self.status = self.erro
     
     def print_object(self):
         print('Código: ' , self.codigo)
@@ -33,13 +50,16 @@ class ObjetoPostal:
     def get_status(self, data):
         self.dias_diferenca = (datetime.today() - data).days
         if(self.dias_diferenca < 0):
-            self.color = 'green'
+            self.color = 'dark green'
+            self.bg_color = 'pale green'
             return 'No Prazo'
         elif(self.dias_diferenca > 0):
             self.color = 'red'
+            self.bg_color = 'dark salmon'
             return 'Vencido'
         else:
-            self.color = 'blue'
+            self.color = 'dark blue'
+            self.bg_color = 'light blue'
             return 'Entregar Hoje'
 
     def get_vencimento_from_string(self, string_data):
@@ -58,39 +78,54 @@ class ObjetoPostal:
   
 #Layouts
 frame_layout = [
-    [gui.Text('AA123456789BR', key='-frame_codigo-', font='Helvetica 24', size=(26,1))],
-    [gui.Text('99/99/9999', key='-frame_data-'), gui.Text('Status', key='-frame_status-')]
+    [gui.Text('', key='-frame_codigo-', font='Helvetica 24', size=(26,2),expand_y=True ,expand_x=True,justification='center')],
+    [gui.Text('', key='-frame_data-', size=(10,2)), gui.Text('', key='-frame_status-', size=(24,3))]
     ]
 
 window_layout = [
     [gui.Text('Consulta Prazo')],
     [gui.Input(key='codigo', size=(26,1), focus=True), gui.Button('checar',bind_return_key=True )],
     [gui.Frame('Objeto', frame_layout, element_justification='c', key=('-frame-'))],
-    [gui.Table([['','','']], headings=['OBJETO', 'VENCIMENTO', 'SITUAÇÃO'], key='-table-')]
+    [gui.Table([['','','']], headings=['   OBJETO   ', 'VENCIMENTO', '    SITUAÇÃO    '], key='-table-', auto_size_columns=True)]
     
         ]
 
-window = gui.Window('Checar Prazo', window_layout, size=(400,300))
+window = gui.Window('Checar Prazo', window_layout, size=(420,480))
 
 
 def on_checar_click(codigo_objeto):
+    carregando()
     novo_objeto = ObjetoPostal(codigo_objeto)
     update_frame(novo_objeto)
     clear_input()
     lista_objetos.insert(0, novo_objeto.layout())
+    lista_colors.insert(0, novo_objeto.bg_color)
     update_table()
+
+def carregando():
+    window['-frame_codigo-'].update('carregando...')
+    window['-frame_codigo-'].update(text_color='black')
+    window['-frame_codigo-'].update(background_color='white')
+    window['-frame_data-'].update('')
+    window['-frame_status-'].update('')
+    window.finalize()
+
 
 def update_table():
     window['-table-'].update(values=lista_objetos)
+  
 
 def clear_input():
     window['codigo'].update('')
     window['codigo'].focus = True
 
 def update_frame(novo_objeto):
+    window['-frame_codigo-'].update(text_color=novo_objeto.color)
+    window['-frame_codigo-'].update(background_color=novo_objeto.bg_color)
     window['-frame_codigo-'].update(novo_objeto.codigo)
-    window['-frame_data-'].update(novo_objeto.vencimento_formatado)
+    window['-frame_data-'].update('Vencimento: ' + novo_objeto.vencimento_formatado)
     window['-frame_status-'].update(novo_objeto.status)
+
 
 
 
@@ -101,6 +136,9 @@ while True:
     elif event == 'checar':
         on_checar_click(values['codigo'])
 window.Close()
+
+
+
 
 
 
