@@ -38,7 +38,7 @@ class ObjetoPostal:
             self.codigo = 'ERRO'
             self.vencimento_formatado = ''
             self.color = 'black'
-            self.bg_color = 'white'
+            self.bg_color = 'salmon'
             self.status = self.erro
     
     def print_object(self):
@@ -86,11 +86,11 @@ window_layout = [
     [gui.Text('Consulta Prazo')],
     [gui.Input(key='codigo', size=(26,1), focus=True), gui.Button('checar',bind_return_key=True )],
     [gui.Frame('Objeto', frame_layout, element_justification='c', key=('-frame-'))],
-    [gui.Table([['','','']], headings=['   OBJETO   ', 'VENCIMENTO', '    SITUAÇÃO    '], key='-table-', auto_size_columns=True)]
+    [gui.Table([['','','']], headings=['   OBJETO   ', 'VENCIMENTO', '    SITUAÇÃO    '], key='-table-', justification = "left")]
     
         ]
 
-window = gui.Window('Checar Prazo', window_layout, size=(420,480))
+window = gui.Window('Checar Prazo', window_layout, size=(420,480), icon='verificaprazo.ico')
 
 
 def on_checar_click(codigo_objeto):
@@ -113,6 +113,9 @@ def carregando():
 
 def update_table():
     window['-table-'].update(values=lista_objetos)
+    for i in range(len(lista_colors)):
+        window['-table-'].update(row_colors=[(i, lista_colors[i])])
+
   
 
 def clear_input():
@@ -136,10 +139,5 @@ while True:
     elif event == 'checar':
         on_checar_click(values['codigo'])
 window.Close()
-
-
-
-
-
 
 
