@@ -10,7 +10,7 @@ urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataM
 url = urlinterna
 lista_objetos = []
 lista_colors = []
-
+empy_object = {'codigo': '', 'descricaoUltimoEvento': '', 'msgErro': 'Não foi possível objter dados', 'dataMaxEntrega': None, 'servico': None }
 class ObjetoPostal:
 
     def __init__(self, codigo_postal):
@@ -85,6 +85,8 @@ class ObjetoPostal:
             return dict_objeto_postal['cResultadoObjeto']['Objetos']['cObjeto']
         except:
             gui.popup('erro de conexão')
+            return empy_object
+
     
     def layout(self):
         return [self.codigo, self.vencimento_formatado, self.status]
@@ -191,5 +193,5 @@ http://ws.correios.com.br/calculador/calcprecoprazo.asmx
         """
         gui.popup(text,icon='verificaprazo.ico', title='Instruções')
     elif event == 'Sobre::sobre':
-        gui.popup('tecnologia utilizada: python\nerros e dúvidas: raildorcv@correios.com.br', icon='verificaprazo.ico', title='Sobre')
+        gui.popup('tecnologia utilizada: python\nerros/dúvidas/sugestões: raildorcv@correios.com.br', icon='verificaprazo.ico', title='Sobre')
 window.Close()
