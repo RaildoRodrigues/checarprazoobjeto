@@ -2,6 +2,7 @@ import PySimpleGUI as gui
 import requests
 import xmltodict
 from datetime import datetime
+from tiposoffline import tipos_postais
 
 urlinterna = 'http://scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
 urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataMaxima?codigoObjeto='
@@ -173,7 +174,7 @@ try:
     dicionario_de_tipos = carregar_tipos_postais()
 except:
     gui.popup('Erro ao carregar tipos postais')
-    dicionario_de_tipos = {}
+    dicionario_de_tipos = tipos_postais
     #window.close()
 
 
@@ -192,4 +193,3 @@ http://ws.correios.com.br/calculador/calcprecoprazo.asmx
     elif event == 'Sobre::sobre':
         gui.popup('tecnologia utilizada: python\nerros e dúvidas: raildorcv@correios.com.br', icon='verificaprazo.ico', title='Sobre')
 window.Close()
-
