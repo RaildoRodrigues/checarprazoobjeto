@@ -6,7 +6,7 @@ from datetime import datetime
 urlinterna = 'http://scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
 urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataMaxima?codigoObjeto='
 
-url = urlexterna
+url = urlinterna
 lista_objetos = []
 lista_colors = []
 
@@ -27,10 +27,10 @@ class ObjetoPostal:
 
 
     def validate_servico(self, servico_string):
-        if servico_string == None:
-            return ''
-        else:
+        try:
             return dicionario_de_tipos[servico_string]
+        except:
+            return ''
 
     def validate_codigo(self, code_string):
         if code_string == None:
@@ -56,11 +56,13 @@ class ObjetoPostal:
 
     def get_status(self, data):
         self.dias_diferenca = (datetime.today() - data).days
-        if(self.dias_diferenca < 0):
+        hoje = datetime.today().date()
+        vencimento = data.date()
+        if(vencimento > hoje):
             self.color = 'dark green'
             self.bg_color = 'pale green'
             return 'No Prazo'
-        elif(self.dias_diferenca > 0):
+        elif(vencimento < hoje):
             self.color = 'red'
             self.bg_color = 'dark salmon'
             return 'Vencido'
@@ -170,8 +172,9 @@ def carregar_tipos_postais():
 try:
     dicionario_de_tipos = carregar_tipos_postais()
 except:
-    gui.popup('Erro de conexão')
-    window.close()
+    gui.popup('Erro ao carregar tipos postais')
+    dicionario_de_tipos = {}
+    #window.close()
 
 
 # Loop Window
@@ -189,5 +192,4 @@ http://ws.correios.com.br/calculador/calcprecoprazo.asmx
     elif event == 'Sobre::sobre':
         gui.popup('tecnologia utilizada: python\nerros e dúvidas: raildorcv@correios.com.br', icon='verificaprazo.ico', title='Sobre')
 window.Close()
-
 
