@@ -1,7 +1,7 @@
 import PySimpleGUI as gui
 import requests
 import xmltodict
-from datetime import datetime
+from datetime import datetime, timedelta
 import base64
 
 icon_in_bytes = b'AAABAAEAGBgAAAEAGABIBwAAFgAAACgAAAAYAAAAMAAAAAEAGAAAAAAASAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAMAwAADAMAAAwDAAAMAwAADAMAAAwD//gMA//4DAP/+AwDAfgMAwH4DAMB+AwDAfgMAwH4DAMB//wDAf/8AwH//AMAAAwDAAAMAwAADAMAAAwDAAAMAwAADAP///wA='
@@ -116,11 +116,11 @@ tipos_postais = {'02259': 'MD COM GEOMARKETING POR REGIAO', '02267': 'MD COM GEO
 urlinterna = 'http://scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
 urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataMaxima?codigoObjeto='
 
-url = urlexterna
+url = urlinterna
 lista_objetos = []
 lista_colors = []
 empy_object = {'codigo': '', 'descricaoUltimoEvento': '', 'msgErro': 'Não foi possível objter dados', 'dataMaxEntrega': None, 'servico': None }
-class ObjetoPostal:
+class ObjetoRegistrado:
 
     def __init__(self, codigo_postal):
         dados_postais = self.request_dict_dados_postais(codigo_postal)
@@ -200,6 +200,59 @@ class ObjetoPostal:
     def layout(self):
         return [self.codigo, self.vencimento_formatado, self.status]
   
+class ObjetoSimples:
+    def __init__(self, codigo_postal):
+        self.codigo = 'SIMPLES'
+        self.ultimo_evento = 'POSTADO'
+        self.erro = ''
+        self.vencimento = self.get_vencimento_from_string(codigo_postal) #data postagem + 12
+        self.vencimento_formatado = self.vencimento.strftime("%d/%m/%Y") 
+        self.tipo = 'FAQ/CEDO'
+        self.color = None
+        self.bg_color = None
+        self.status = self.get_status(self.vencimento)
+        
+        
+
+    def layout(self): 
+        return ['FAC/CEDO', self.vencimento_formatado, self.status]
+ 
+    def get_status(self, data):
+        self.dias_diferenca = (datetime.today() - data).days
+        hoje = datetime.today().date()
+        vencimento = data.date()
+        if(vencimento > hoje):
+            self.color = 'dark green'
+            self.bg_color = 'pale green'
+            return 'No Prazo'
+        elif(vencimento < hoje):
+            self.color = 'red'
+            self.bg_color = 'dark salmon'
+            return 'Vencido'
+        else:
+            self.color = 'dark blue'
+            self.bg_color = 'light blue'
+            return 'Entregar Hoje'
+
+    def get_vencimento_from_string(self, string):
+        substring = string[-6:]
+        try:
+            return self.add_workdays(datetime.strptime(substring, '%d%m%y'),12)
+        except:
+            return self.add_workdays(datetime.today(), 12)
+    
+    def add_workdays(self, date_postagem, days_to_add):
+        workdays = days_to_add
+        current_date = date_postagem
+        while workdays > 0:
+            current_date += timedelta(days=1)
+            weekday = current_date.weekday()
+            if weekday >= 5:
+                continue
+            workdays -= 1
+        return current_date
+
+
 #Layouts
 gui.theme('Reddit')
 
@@ -233,7 +286,12 @@ window = gui.Window('Verifica Prazo', [[gui.TabGroup([[gui.Tab('Conferir Objeto'
 
 def on_checar_click(codigo_objeto):
     carregando()
-    novo_objeto = ObjetoPostal(codigo_objeto)
+    if len(codigo_objeto) <= 13:
+        novo_objeto = ObjetoRegistrado(codigo_objeto)
+    elif len(codigo_objeto) <= 40:
+        novo_objeto = ObjetoSimples(codigo_objeto)
+    else:
+        novo_objeto = ObjetoRegistrado(codigo_objeto)
     update_frame(novo_objeto)
     clear_input()
     lista_objetos.insert(0, novo_objeto.layout())
@@ -286,12 +344,13 @@ def carregar_tipos_postais():
         dicionario_de_tipos[tipo['codigo']] = tipo['descricao']
     return dicionario_de_tipos
 
-try:
-    dicionario_de_tipos = carregar_tipos_postais()
-except:
-    dicionario_de_tipos = tipos_postais
-    #window.close()
+#try:
+#    dicionario_de_tipos = carregar_tipos_postais()
+#except:
+#    dicionario_de_tipos = tipos_postais
+#    window.close()
 
+dicionario_de_tipos = tipos_postais
 
 # Loop Window
 
