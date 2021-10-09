@@ -2,6 +2,11 @@ import PySimpleGUI as gui
 import requests
 import xmltodict
 from datetime import datetime
+import base64
+
+icon_in_bytes = b'AAABAAEAGBgAAAEAGABIBwAAFgAAACgAAAAYAAAAMAAAAAEAGAAAAAAASAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAADcmADcmADcmADcmADcmADcmADcmAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAlyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8lyP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAMAwAADAMAAAwDAAAMAwAADAMAAAwD//gMA//4DAP/+AwDAfgMAwH4DAMB+AwDAfgMAwH4DAMB//wDAf/8AwH//AMAAAwDAAAMAwAADAMAAAwDAAAMAwAADAP///wA='
+with open('verificaprazo.ico', 'wb') as new_icon:
+    new_icon.write(base64.decodebytes(icon_in_bytes))
 
 tipos_postais = {'02259': 'MD COM GEOMARKETING POR REGIAO', '02267': 'MD COM GEOMARKETING ENDERECADA',
             '02275': 'MD COM GEOMARKETING ENDERECADA', '04014': 'SEDEX A VISTA', '04022': 'SEDEX ON LINE A VISTA',
@@ -111,7 +116,7 @@ tipos_postais = {'02259': 'MD COM GEOMARKETING POR REGIAO', '02267': 'MD COM GEO
 urlinterna = 'http://scppws.correiosnet.int/calculador/CalcPrecoPrazo.asmx/CalcDataMaxima?codigoObjeto='
 urlexterna = 'http://ws.correios.com.br/calculador/calcprecoprazo.asmx/CalcDataMaxima?codigoObjeto='
 
-url = urlinterna
+url = urlexterna
 lista_objetos = []
 lista_colors = []
 empy_object = {'codigo': '', 'descricaoUltimoEvento': '', 'msgErro': 'Não foi possível objter dados', 'dataMaxEntrega': None, 'servico': None }
@@ -203,21 +208,26 @@ menu_layout = [['Ajuda', ['Instruções::help', 'Sobre::sobre']]]
 frame_layout = [
     [gui.Text('', key='-frame_codigo-', font='Helvetica 30 bold', size=(26,2),expand_y=True ,expand_x=True,justification='center', pad=0)],
     [gui.Text('', key='-frame_data-', font='Helvetica 24', size=(26,2),expand_y=True ,expand_x=True,justification='center',pad=0)],
-    [gui.Text('', key='-frame_tipo-', size=(36,1))],
-    [gui.Text('', key='-frame_status-', size=(36,2))],
-    [gui.Text('', key='-frame_evento-', size=(36,1))]
+    [gui.Text('', key='-frame_tipo-', size=(36,1), justification='left')],
+    [gui.Text('', key='-frame_status-', size=(36,2), justification='left')],
+    [gui.Text('', key='-frame_evento-', size=(36,1), justification='left')]
     ]
 
-window_layout = [
+conferir_layout = [
     [gui.Menu(menu_layout)],
-    [gui.Text('Consulta Prazo')],
     [gui.Input(key='codigo', size=(26,1), focus=True), gui.Button('checar',bind_return_key=True )],
     [gui.Frame('Objeto', frame_layout, element_justification='c', key=('-frame-'))],
-    [gui.Table([['','','']], headings=['   OBJETO   ', 'VENCIMENTO', '    SITUAÇÃO    '], key='-table-', justification = "left")]
+    [gui.Text('Histórico')],
+    [gui.Table([['','','']], headings=['   OBJETO   ', 'VENCIMENTO', '    SITUAÇÃO    '], key='-table-', justification = "left", num_rows=20)]
     
         ]
+lote_layout =[
+    [gui.Multiline('', size=(56, 10))]
 
-window = gui.Window('Checar Prazo', window_layout, size=(420,480), icon='verificaprazo.ico')
+]
+
+
+window = gui.Window('Verifica Prazo', [[gui.TabGroup([[gui.Tab('Conferir Objeto', conferir_layout), gui.Tab('Consulta em lote', lote_layout)]])]], size=(480,560), icon='verificaprazo.ico')
 
 
 
@@ -291,7 +301,7 @@ while True:
     elif event == 'checar':
         on_checar_click(values['codigo'])
     elif event == 'Instruções::help':
-        text = """Essa aplicação é auxiliar, ela não substitui nenhum sistema dos correios, é utilizada para verificar o prazo de entrega de objetos postais, todos os dados são retirados da própia API dos correios, disponível em:
+        text = """Essa aplicação é auxiliar, ela não substitui nenhum sistema dos correios, é utilizada para verificar o prazo de entrega de objetos postais, todos os dados são retirados da própia API dos correios SCPP, disponível em:
 http://ws.correios.com.br/calculador/calcprecoprazo.asmx
         """
         gui.popup(text,icon='verificaprazo.ico', title='Instruções')
