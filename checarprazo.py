@@ -201,34 +201,34 @@ class ObjetoRegistrado:
         return [self.codigo, self.vencimento_formatado, self.status]
   
 class ObjetoSimples:
-    def __init__(self, codigo_postal):
-        self.codigo = 'SIMPLES'
-        self.ultimo_evento = 'POSTADO'
+    def __init__(self, codigo_postal):  
         self.erro = ''
-        self.vencimento = self.get_vencimento_from_string(codigo_postal) #data postagem + 12
-        self.vencimento_formatado = self.vencimento.strftime("%d/%m/%Y") 
+        self.vencimento = self.get_vencimento_from_string(codigo_postal) #data postagem
+        self.dia_devolucao = self.add_workdays(self.vencimento, 12)
+        self.codigo = 'SIMPLES P: ' + self.vencimento.strftime("%d/%m/%Y")
+        self.ultimo_evento = 'Postado dia ' + self.vencimento.strftime("%d/%m/%Y") 
+        self.dias_apos_postagem = self.dias_uteis_entre_datas(self.vencimento)
+        self.vencimento_formatado = 'D + ' + str(self.dias_apos_postagem)
         self.tipo = 'FAQ/CEDO'
         self.color = None
         self.bg_color = None
-        self.status = self.get_status(self.vencimento)
-        
+        self.status = self.get_status(self.dias_apos_postagem)
         
 
-    def layout(self): 
-        return ['FAC/CEDO', self.vencimento_formatado, self.status]
+    def layout(self):  
+        vencimento = self.dia_devolucao.strftime("%d/%m/%Y")
+        return ['FAC/CEDO', vencimento, self.status]
  
-    def get_status(self, data):
-        self.dias_diferenca = (datetime.today() - data).days
-        hoje = datetime.today().date()
-        vencimento = data.date()
-        if(vencimento > hoje):
+    def get_status(self, dias):
+        vencimento = 12
+        if(dias < vencimento):
             self.color = 'dark green'
             self.bg_color = 'pale green'
-            return 'No Prazo'
-        elif(vencimento < hoje):
+            return 'Entregar até ' + self.dia_devolucao.strftime("%d/%m/%Y")
+        elif(dias > vencimento):
             self.color = 'red'
             self.bg_color = 'dark salmon'
-            return 'Vencido'
+            return 'Vencido dia ' + self.dia_devolucao.strftime("%d/%m/%Y")
         else:
             self.color = 'dark blue'
             self.bg_color = 'light blue'
@@ -237,20 +237,32 @@ class ObjetoSimples:
     def get_vencimento_from_string(self, string):
         substring = string[-6:]
         try:
-            return self.add_workdays(datetime.strptime(substring, '%d%m%y'),12)
+            return datetime.strptime(substring, '%d%m%y')
         except:
-            return self.add_workdays(datetime.today(), 12)
+            return datetime.today()
     
-    def add_workdays(self, date_postagem, days_to_add):
+    def dias_uteis_entre_datas(self, data_inical, data_final = datetime.today()):
+        if data_final.date() <= data_inical.date():
+            return 0
+        dias_uteis = 0
+        while data_inical.date() <= data_final.date():
+            if data_inical.isoweekday() < 6:
+                dias_uteis += 1
+            data_inical += timedelta(days=1)
+        return dias_uteis
+
+    def add_workdays(self, data_inicial, days_to_add):
         workdays = days_to_add
-        current_date = date_postagem
+        current_date = data_inicial
         while workdays > 0:
             current_date += timedelta(days=1)
             weekday = current_date.weekday()
             if weekday >= 5:
                 continue
             workdays -= 1
-        return current_date
+        return current_date       
+
+
 
 
 #Layouts
@@ -271,11 +283,11 @@ conferir_layout = [
     [gui.Input(key='codigo', size=(26,1), focus=True), gui.Button('checar',bind_return_key=True )],
     [gui.Frame('Objeto', frame_layout, element_justification='c', key=('-frame-'))],
     [gui.Text('Histórico')],
-    [gui.Table([['','','']], headings=['   OBJETO   ', 'VENCIMENTO', '    SITUAÇÃO    '], key='-table-', justification = "left", num_rows=20)]
+    [gui.Table([['','','']], headings=['   OBJETO   ', 'VENCIMENTO', '        SITUAÇÃO        '], key='-table-', justification = "left", num_rows=20)]
     
         ]
 lote_layout =[
-    [gui.Multiline('', size=(56, 10))]
+    [gui.Multiline('Ainda em desenvolvimento', size=(56, 10))]
 
 ]
 
