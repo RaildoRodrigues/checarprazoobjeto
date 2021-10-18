@@ -121,8 +121,11 @@ empy_object = {'codigo': '', 'descricaoUltimoEvento': '',
 
 class ObjetoRegistrado:
 
-    def __init__(self, codigo_postal):
-        dados_postais = self.request_dict_dados_postais(codigo_postal)
+    def __init__(self, codigo_postal, off = False):
+        if off:
+            dados_postais = codigo_postal
+        else:
+            dados_postais = self.request_dict_dados_postais(codigo_postal)
         self.codigo = self.validate_codigo(dados_postais['codigo'])
         self.ultimo_evento = dados_postais['descricaoUltimoEvento']
         self.erro = dados_postais['msgErro']
@@ -301,20 +304,32 @@ def on_verifica_click(multiline_text):
     noprazo = []
     lista_de_objetos = request_dict_objetos(codigos)
     for objeto in lista_de_objetos:
-        print(objeto['codigo'])
+        objeto_postal = ObjetoRegistrado(objeto, True)
+        if objeto_postal.status == 'Entregar Hoje':
+            hoje.append([objeto_postal.codigo])
+        elif objeto_postal.status == 'Vencido':
+            vencidos.append([objeto_postal.codigo])
+        elif objeto_postal.status == 'No Prazo':
+            noprazo.append([objeto_postal.codigo])
+
     window['-hoje-'].update(values=hoje)
     window['-vencidos-'].update(values=vencidos)
     window['-noprazo-'].update(values=noprazo)
 
 def request_dict_objetos(lista_de_codigos):
+    lista_de_objetos = []
     string_de_codigos = ''
+    if len(lista_de_codigos) > 100:
+        lista_de_objetos.extend(request_dict_objetos(lista_de_codigos[100:]))
+        lista_de_codigos = lista_de_codigos[0:100]
+
     for codigo in lista_de_codigos:
         string_de_codigos += codigo + ','
-    lista_de_objetos = []
+    
     try:
         get_xml = requests.get(url + string_de_codigos)
         dict_objeto_postal = xmltodict.parse(get_xml.text)
-        lista_de_objetos = dict_objeto_postal['cResultadoObjeto']['Objetos']['cObjeto']
+        lista_de_objetos.extend(dict_objeto_postal['cResultadoObjeto']['Objetos']['cObjeto'])
     except:
         lista_de_objetos = []
 
@@ -421,4 +436,5 @@ http://ws.correios.com.br/calculador/calcprecoprazo.asmx
         gui.popup('tecnologia utilizada: python\nerros/dúvidas/sugestões: raildorcv@correios.com.br',
                   icon='src/verificaprazo.ico', title='Sobre')
 window.Close()
+
 
