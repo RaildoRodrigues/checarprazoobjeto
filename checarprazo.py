@@ -119,7 +119,6 @@ lista_colors = []
 empy_object = {'codigo': '', 'descricaoUltimoEvento': '',
                'msgErro': 'Não foi possível objter dados', 'dataMaxEntrega': None, 'servico': None}
 
-
 class ObjetoRegistrado:
 
     def __init__(self, codigo_postal):
@@ -198,7 +197,6 @@ class ObjetoRegistrado:
     def layout(self):
         return [self.codigo, self.vencimento_formatado, self.status]
 
-
 class ObjetoSimples:
     def __init__(self, codigo_postal):
         self.erro = ''
@@ -262,7 +260,6 @@ class ObjetoSimples:
             workdays -= 1
         return current_date
 
-
 # Layouts
 gui.theme('Reddit')
 
@@ -302,23 +299,30 @@ def on_verifica_click(multiline_text):
     hoje = []
     vencidos = []
     noprazo = []
-    for codigo in codigos:
-        novo_objeto  = ObjetoRegistrado(codigo)
-        if novo_objeto.status == 'Entregar Hoje':
-            hoje.append([novo_objeto.codigo])
-        elif novo_objeto.status == 'Vencido':
-            vencidos.append([novo_objeto.codigo])
-        elif novo_objeto.status == 'No Prazo':
-            noprazo.append([novo_objeto.codigo])
+    lista_de_objetos = request_dict_objetos(codigos)
+    for objeto in lista_de_objetos:
+        print(objeto['codigo'])
     window['-hoje-'].update(values=hoje)
     window['-vencidos-'].update(values=vencidos)
     window['-noprazo-'].update(values=noprazo)
 
-    
+def request_dict_objetos(lista_de_codigos):
+    string_de_codigos = ''
+    for codigo in lista_de_codigos:
+        string_de_codigos += codigo + ','
+    lista_de_objetos = []
+    try:
+        get_xml = requests.get(url + string_de_codigos)
+        dict_objeto_postal = xmltodict.parse(get_xml.text)
+        lista_de_objetos = dict_objeto_postal['cResultadoObjeto']['Objetos']['cObjeto']
+    except:
+        lista_de_objetos = []
 
-
-
-
+    if type(lista_de_objetos) == list:
+        return lista_de_objetos
+    else:
+        return []
+        
 
 
 
@@ -418,4 +422,3 @@ http://ws.correios.com.br/calculador/calcprecoprazo.asmx
                   icon='src/verificaprazo.ico', title='Sobre')
 window.Close()
 
-# python -m pysimplegui-exemaker.pysimplegui-exemaker
