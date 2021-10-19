@@ -160,10 +160,6 @@ class ObjetoRegistrado:
             self.bg_color = 'salmon'
             self.status = self.erro
 
-    def print_object(self):
-        print('Código: ', self.codigo)
-        print('Status: ', self.status)
-        print('Vencimento: ', self.vencimento.strftime("%d/%m/%Y"))
 
     def get_status(self, data):
         self.dias_diferenca = (datetime.today() - data).days
@@ -290,19 +286,24 @@ conferir_layout = [
 
 ]
 lote_layout = [
-    [gui.Multiline(size=(56, 16), key='-input_lote-')],
-    [gui.Button('Verificar Lote', key='-verificar-')],
-    [gui.Table([['']], headings=['Hoje'], def_col_width=13,auto_size_columns=False, key='-hoje-' ), gui.Table([['']], headings=['Vencidos'],def_col_width=13,auto_size_columns=False, key='-vencidos-' ),
-    gui.Table([['']], headings=['No prazo'], def_col_width=13,auto_size_columns=False, key='-noprazo-' )]
+    [gui.Text('Cole os códigos aqui:')],
+    [gui.Multiline(size=(60, 16), key='-input_lote-')],
+    [gui.Button('Verificar Lote', key='-verificar-'), gui.ProgressBar(100, orientation='h', size=(24,20), key='-barra-')],
+    [gui.Table([['']], headings=['Hoje'], def_col_width=13,auto_size_columns=False, key='-hoje-',justification='left' ),
+    gui.Table([['']], headings=['Vencidos'],def_col_width=13,auto_size_columns=False, key='-vencidos-',justification='left' ),
+    gui.Table([['']], headings=['No prazo'], def_col_width=13,auto_size_columns=False, key='-noprazo-', justification='left')]
 
 ]
+
 
 def on_verifica_click(multiline_text):
     codigos = re.findall(r'[A-Za-z]{2}[0-9]{9}[A-Za-z]{2}', multiline_text)
     hoje = []
     vencidos = []
     noprazo = []
-    lista_de_objetos = request_dict_objetos(codigos)
+    barra_size = len(codigos)
+    window['-barra-'].UpdateBar(0)
+    lista_de_objetos = request_dict_objetos(codigos, barra_size)
     for objeto in lista_de_objetos:
         objeto_postal = ObjetoRegistrado(objeto, True)
         if objeto_postal.status == 'Entregar Hoje':
@@ -315,14 +316,25 @@ def on_verifica_click(multiline_text):
     window['-hoje-'].update(values=hoje)
     window['-vencidos-'].update(values=vencidos)
     window['-noprazo-'].update(values=noprazo)
+    clear_input_lote(codigos)
 
-def request_dict_objetos(lista_de_codigos):
+
+
+
+def clear_input_lote(codigos):
+    string_de_codigos = ''
+    for codigo in codigos:
+        string_de_codigos += codigo + '\n'
+    window['-input_lote-'].update(string_de_codigos)
+
+
+def request_dict_objetos(lista_de_codigos, barra_size):
+    step = 50
     lista_de_objetos = []
     string_de_codigos = ''
-    if len(lista_de_codigos) > 100:
-        lista_de_objetos.extend(request_dict_objetos(lista_de_codigos[100:]))
-        lista_de_codigos = lista_de_codigos[0:100]
-
+    if len(lista_de_codigos) > step:
+        lista_de_objetos.extend(request_dict_objetos(lista_de_codigos[step:], barra_size))
+        lista_de_codigos = lista_de_codigos[0:step]
     for codigo in lista_de_codigos:
         string_de_codigos += codigo + ','
     
@@ -334,6 +346,7 @@ def request_dict_objetos(lista_de_codigos):
         lista_de_objetos = []
 
     if type(lista_de_objetos) == list:
+        carregando_lote(len(lista_de_objetos), barra_size)
         return lista_de_objetos
     else:
         return []
@@ -343,6 +356,15 @@ def request_dict_objetos(lista_de_codigos):
 
 window = gui.Window('Verifica Prazo', [[gui.TabGroup([[gui.Tab('Conferir Objeto', conferir_layout), gui.Tab(
     'Consulta em lote', lote_layout)]])]], size=(480, 560), icon='src/verificaprazo.ico')
+
+
+def carregando_lote(valor, barra_size):
+    progress_bar = window['-barra-']
+    try:
+        valor = valor / barra_size * 100
+        progress_bar.UpdateBar(valor)
+    except:
+        progress_bar.UpdateBar(0)
 
 
 def on_checar_click(codigo_objeto):
